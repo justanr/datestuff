@@ -1,0 +1,23 @@
+[run]
+omit = 
+        _*.py
+
+branch = True
+
+
+[report]
+skip_covered = True
+
+exclude_lines = 
+        NOQA
+        pragma: no cover
+        def __repr__
+        if self\.debug
+        if 0
+        if False
+        if None
+        raise Assertation
+        raise NotImplementedError
+        return NotImplemented
+        abstractmethod
+        if __name__ == .__main__.
