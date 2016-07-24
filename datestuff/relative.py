@@ -2,24 +2,31 @@ from datetime import date, datetime, timedelta, time
 from ._comparable import ComparableMixin
 
 try:
-    from datetutil.relativedelta import relativedelta
-except ImportError:
+    from dateutil.relativedelta import relativedelta
+except ImportError:  # pragma: no cover
     relativedelta = timedelta
 
 ZERO = timedelta(0)
 
 
 class RelativeDate(ComparableMixin):
+    """
+    An unfixed date that is comparable to regular date and datetime objects.
+    """
     def __init__(self, offset=ZERO, clock=date.today):
         self.offset = offset
         self._clock = clock
 
     def replace(self, **kwargs):
+        """
+        Creates a static instance of RelativeDate, but allows to also change the offset.
+        """
         offset = kwargs.pop('offset', self.offset)
         when = self._now.replace(**kwargs)
         return self._staticfactory(when, offset)
 
     def as_date(self):
+        "Return the underlying date instance"
         return self._now
 
     @property
@@ -28,18 +35,22 @@ class RelativeDate(ComparableMixin):
 
     @classmethod
     def fromordinal(cls, ordinal, offset=ZERO):
+        "Create a static RelativeDate from an ordinal"
         return cls._staticfactory(date.fromordinal(ordinal), offset)
 
     @classmethod
     def fromtimestamp(cls, timestamp, offset=ZERO):
+        "Create a static RelativeDate from a timestamp"
         return cls._staticfactory(date.fromtimestamp(timestamp), offset)
 
     @classmethod
     def today(cls, offset=ZERO):
-        return RelativeDate(offset=offset)
+        "Create a static RelativeDate from date.today"
+        return cls._staticfactory(date.today(), offset=offset)
 
     @staticmethod
     def fromdate(when, offset=ZERO):
+        "Create a static RelativeDate from an arbitrary date instance"
         return RelativeDate(offset=offset, clock=lambda: when)
 
     _staticfactory = fromdate
@@ -51,6 +62,14 @@ class RelativeDate(ComparableMixin):
         return operator(self._now, other)
 
     def __add__(self, other):
+        """
+        Either:
+            * add two relative offsets to one another
+            * add a timedelta to the relative offset
+
+        These return a new RelativeDate instance with the appropriate changes made. If neither
+        are possible, then it adds the other object to the underlying date and returns that result
+        """
         if isinstance(other, RelativeDate):
             new_offset = self.offset + other.offset
             return self.__class__(new_offset, self._clock)
@@ -61,6 +80,15 @@ class RelativeDate(ComparableMixin):
     __radd__ = __add__
 
     def __sub__(self, other):
+        """
+        Either:
+            * subtract two relative offsets from each other
+            * subtract a timedelta from the relative offset
+
+        These return a new RelativeDate instance with the appropriate changes made. If neither
+        are possible, then it subtracts the other object from the underlying date and returns that
+        result.
+        """
         if isinstance(other, (timedelta, relativedelta)):
             return self.__class__(self.offset - other, self._clock)
         elif isinstance(other, RelativeDate):
@@ -93,6 +121,10 @@ class RelativeDate(ComparableMixin):
 
 
 class RelativeDateTime(RelativeDate):
+    """
+    Unfixed datetime instance. Essentially the same as RelativeDate but with some changes
+    to make it an appropriate replacement for a datetime object.
+    """
     def __init__(self, offset=ZERO, clock=datetime.now):
         super(RelativeDateTime, self).__init__(offset, clock)
 
