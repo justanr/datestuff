@@ -1,5 +1,6 @@
-from datestuff import RelativeDate
-from datetime import timedelta, date, datetime
+from datestuff.relative import RelativeDate, RelativeDateTime
+from datestuff.utils import within_delta
+from datetime import timedelta, date, datetime, tzinfo
 from dateutil.relativedelta import relativedelta
 import operator
 import pytest
@@ -7,6 +8,18 @@ import pytest
 
 YESTERDAY = date.today() - timedelta(days=1)
 TOMORROW = date.today() + timedelta(days=1)
+# janky UTC, can't use datetime.timezone because of Py 2.7
+UTC = type('UTC', (tzinfo,), {
+    'dst': lambda *a: timedelta(0),
+    'utcoffset': lambda *a: timedelta(0),
+    'tzname': lambda *a: 'UTC'
+})()
+
+UTCPlusOne = type('UTC', (tzinfo,), {
+    'dst': lambda *a: timedelta(minutes=60),
+    'utcoffset': lambda *a: timedelta(minutes=60),
+    'tzname': lambda *a: 'UTC+1'
+})()
 
 
 class TestRelativeDate(object):
@@ -75,7 +88,7 @@ class TestRelativeDate(object):
 
     def test_textual_representations(self):
         target = date(2016, 3, 8)
-        subject = RelativeDate(clock=lambda: target)
+        subject = RelativeDate.fromdate(target)
 
         assert str(subject) == str(target)
 
@@ -83,7 +96,7 @@ class TestRelativeDate(object):
         assert bool(RelativeDate()) == bool(date.today())
 
     def test_proxy_attr_access_to_underlying_date(self):
-        subject = RelativeDate(clock=lambda: date(2016, 3, 8))
+        subject = RelativeDate.fromdate(date(2016, 3, 8))
         target = date(2016, 3, 8)
 
         assert subject.year == target.year
@@ -100,19 +113,95 @@ class TestRelativeDate(object):
 
         assert rd == date.today() + timedelta(days=5)
 
+    def test_as_date(self):
+        rd = RelativeDate.today()
+
+        assert isinstance(rd.as_date(), date)
+        assert rd.as_date() == date.today()
+
+    def test_replace_with_date_arguments(self):
+        rd = RelativeDate.fromdate(date(2016, 1, 1)).replace(year=2015, day=2, month=2)
+
+        assert rd.as_date() == date(2015, 2, 2)
+
+    def test_replace_with_offset_argument(self):
+        rd = RelativeDate.today().replace(offset=timedelta(days=5))
+
+        assert rd == RelativeDate.fromdate(date.today(), offset=timedelta(days=5))
+
+    def test_fromtimestamp(self):
+        rd = RelativeDate.fromtimestamp(1451624400.0, timedelta(days=5))
+
+        assert rd == RelativeDate.fromdate(date(2016, 1, 1), timedelta(days=5))
+
+
+class TestRelativeDateTime(object):
+    def test_fromdatetime(self):
+        rdt = RelativeDateTime.fromdatetime(
+            datetime(2016, 1, 1, 15, 45),
+            offset=timedelta(minutes=15)
+        )
+
+        assert rdt == datetime(2016, 1, 1, 16)
+        assert rdt == RelativeDateTime(
+            clock=lambda: datetime(2016, 1, 1, 15, 45),
+            offset=timedelta(minutes=15)
+        )
+
+    def test_asdatetime(self):
+        rdt = RelativeDateTime.fromdatetime(
+            datetime(2016, 1, 1, 15, 45),
+            offset=timedelta(minutes=15)
+        ).as_datetime()
+
+        assert isinstance(rdt, datetime)
+        assert rdt == datetime(2016, 1, 1, 16)
+
+    def test_asdate(self):
+        rdt = RelativeDateTime.fromdatetime(datetime(2016, 1, 1, 15)).as_date()
+
+        assert isinstance(rdt, date)
+        assert rdt == date(2016, 1, 1)
+
+    def test_relative_datetime_now(self):
+        rdt = RelativeDateTime.now()
+
+        # just need to know it is close enough
+        assert within_delta(rdt, datetime.now(), timedelta(seconds=1))
+
+    def test_relative_datetime_now_with_tzinfo(self):
+        rdt = RelativeDateTime.now(UTC)
+
+        assert within_delta(rdt, datetime.now(UTC), timedelta(seconds=1))
+
+    def test_relative_datetime_utcnow(self):
+        rdt = RelativeDateTime.utcnow()
+
+        assert within_delta(rdt, datetime.utcnow(), timedelta(seconds=1))
+
+    def test_relative_datetime_astimezone(self):
+        rdt = RelativeDateTime.fromdatetime(datetime(2016, 1, 1, tzinfo=UTC)).astimezone(UTCPlusOne)  # noqa
+
+        assert rdt == datetime(2016, 1, 1, 1, tzinfo=UTCPlusOne)
+
+    def test_relative_datetime_fromdate(self):
+        rdt = RelativeDateTime.fromdate(date(2016, 1, 1))
+
+        assert rdt == RelativeDateTime.fromdatetime(datetime(2016, 1, 1))
+
 
 class TestRelativeDeltaInterop(object):
     def test_relative_delta_with_relative_date(self):
-        rd = RelativeDate(clock=lambda: datetime(2000, 1, 1), offset=relativedelta(years=16))
+        rd = RelativeDate.fromdate(date(2000, 1, 1), offset=relativedelta(years=16))
 
-        assert rd == datetime(2016, 1, 1)
+        assert rd == date(2016, 1, 1)
 
     def test_add_relative_delta_instances(self):
-        rd = RelativeDate(clock=lambda: date(2016, 1, 1), offset=relativedelta(days=1))
+        rd = RelativeDate.fromdate(date(2016, 1, 1), offset=relativedelta(days=1))
 
-        assert rd + rd == RelativeDate(offset=relativedelta(days=2))
+        assert rd + rd == RelativeDate.fromdate(date(2016, 1, 1), offset=relativedelta(days=2))
 
     def test_sub_relative_delta_instances(self):
-        rd = RelativeDate(clock=lambda: date(2016, 1, 1), offset=relativedelta(days=1))
+        rd = RelativeDate.fromdate(date(2016, 1, 1), offset=relativedelta(days=1))
 
-        assert rd - rd == RelativeDate(offset=relativedelta())
+        assert rd - rd == RelativeDate.fromdate(date(2016, 1, 1), offset=relativedelta())
