@@ -6,17 +6,6 @@ import ast
 import os
 
 
-def _get_version(package):
-    version_re = re.compile(r'__version__\s+=\s+(.*)')
-    filename = os.path.join(package, '__init__.py')
-
-    with open(filename, 'rb') as fh:
-        version = ast.literal_eval(
-            version_re.search(fh.read().decode('utf-8')).group(1))
-
-    return str(version)
-
-
 def read(filename):
     with open(filename, 'r') as fh:
         return fh.read()
@@ -48,7 +37,7 @@ class ToxTest(TestCommand):
 if __name__ == "__main__":
     setup(
         name='datestuff',
-        version=_get_version('datestuff'),
+        version='0.1.0',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Stuff for dates',
