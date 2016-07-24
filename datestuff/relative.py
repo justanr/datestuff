@@ -17,7 +17,7 @@ class RelativeDate(ComparableMixin):
     def replace(self, **kwargs):
         offset = kwargs.pop('offset', self.offset)
         when = self._now.replace(**kwargs)
-        return self._factory(when, offset)
+        return self._staticfactory(when, offset)
 
     def as_date(self):
         return self._now
@@ -28,11 +28,11 @@ class RelativeDate(ComparableMixin):
 
     @classmethod
     def fromordinal(cls, ordinal, offset=ZERO):
-        return cls.fromdate(date.fromordinal(ordinal), offset)
+        return cls._staticfactory(date.fromordinal(ordinal), offset)
 
     @classmethod
     def fromtimestamp(cls, timestamp, offset=ZERO):
-        return cls.fromdate(date.fromtimestamp(timestamp), offset)
+        return cls._staticfactory(date.fromtimestamp(timestamp), offset)
 
     @classmethod
     def today(cls, offset=ZERO):
@@ -42,7 +42,7 @@ class RelativeDate(ComparableMixin):
     def fromdate(when, offset=ZERO):
         return RelativeDate(offset=offset, clock=lambda: when)
 
-    _factory = fromdate
+    _staticfactory = fromdate
 
     def _compare(self, other, operator):
         if isinstance(other, RelativeDate):
@@ -121,19 +121,19 @@ class RelativeDateTime(RelativeDate):
 
     @classmethod
     def combine(cls, date, time, offset=ZERO):  # pragma: no cover
-        return cls.fromdatetime(datetime.combine(date, time), offset)
+        return cls._staticfactory(datetime.combine(date, time), offset)
 
     @classmethod
     def fromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
-        return cls.fromdatetime(datetime.fromdatetime(timestamp), offset)
+        return cls._staticfactory(datetime.fromdatetime(timestamp), offset)
 
     @classmethod
     def utcfromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
-        return cls.fromdatetime(datetime.utcfromtimestamp(timestamp), offset)
+        return cls._staticfactory(datetime.utcfromtimestamp(timestamp), offset)
 
     @classmethod
     def strptime(cls, timestamp, format, offset=ZERO):  # pragma: no cover
-        return cls.fromdatetime(datetime.strptime(timestamp, format), offset)
+        return cls._staticfactory(datetime.strptime(timestamp, format), offset)
 
     @classmethod
     def fromdate(cls, when, offset=ZERO):
@@ -143,4 +143,4 @@ class RelativeDateTime(RelativeDate):
     def fromdatetime(when, offset=ZERO):
         return RelativeDateTime(offset=offset, clock=lambda: when)
 
-    _factory = fromdatetime
+    _staticfactory = fromdatetime
