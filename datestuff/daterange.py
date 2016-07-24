@@ -6,6 +6,15 @@ __all__ = ('DateRange',)
 
 
 class DateRange(object):
+    """
+    Creates a lazy range of date or datetimes. Modeled after the Python 3 range type and has
+    fast path membership checking and lazy iteration of members. Unlike range, DateRange allows
+    an open ended range. Also unlike range, it does not have an implicit step so it must be
+    provided.
+
+    Currently does not support slicing or __getitem__ so it is not a perfect subsitution for
+    range objects.
+    """
     def __init__(self, start=None, stop=None, step=None):
         if step is None:
             raise TypeError("must provide step for DateRange.")
