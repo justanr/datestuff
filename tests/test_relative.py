@@ -1,5 +1,6 @@
 from datestuff import RelativeDate
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
+from dateutil.relativedelta import relativedelta
 import operator
 import pytest
 
@@ -45,7 +46,7 @@ class TestRelativeDate(object):
         (RelativeDate(timedelta(days=1)), operator.lt),
         (RelativeDate(timedelta(days=2)), operator.ne)
     ])
-    def test_relative_date_rich_comparisons(selfi, target, op):
+    def test_relative_date_rich_comparisons(self, target, op):
         subject = RelativeDate(clock=date.today)
 
         assert op(subject, target)
@@ -88,3 +89,20 @@ class TestRelativeDate(object):
         assert subject.year == target.year
         assert subject.day == target.day
         assert subject.month == target.month
+
+
+class TestRelativeDeltaInterop(object):
+    def test_relative_delta_with_relative_date(self):
+        rd = RelativeDate(clock=lambda: datetime(2000, 1, 1), offset=relativedelta(years=16))
+
+        assert rd == datetime(2016, 1, 1)
+
+    def test_add_relative_delta_instances(self):
+        rd = RelativeDate(clock=lambda: date(2016, 1, 1), offset=relativedelta(days=1))
+
+        assert rd + rd == RelativeDate(offset=relativedelta(days=2))
+
+    def test_sub_relative_delta_instances(self):
+        rd = RelativeDate(clock=lambda: date(2016, 1, 1), offset=relativedelta(days=1))
+
+        assert rd - rd == RelativeDate(offset=relativedelta())
