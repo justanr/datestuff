@@ -1,6 +1,11 @@
 from datetime import date, timedelta
 from ._comparable import ComparableMixin
 
+try:
+    from datetutil.relativedelta import relativedelta
+except ImportError:
+    relativedelta = timedelta
+
 
 class RelativeDate(ComparableMixin):
     def __init__(self, offset=timedelta(), clock=date.today):
@@ -24,14 +29,14 @@ class RelativeDate(ComparableMixin):
         if isinstance(other, RelativeDate):
             new_offset = self.offset + other.offset
             return self.__class__(new_offset, self._clock)
-        elif isinstance(other, timedelta):
+        elif isinstance(other, (timedelta, relativedelta)):
             return self.__class__(self.offset + other, self._clock)
         return self._now + other
 
     __radd__ = __add__
 
     def __sub__(self, other):
-        if isinstance(other, timedelta):
+        if isinstance(other, (timedelta, relativedelta)):
             return self.__class__(self.offset - other, self._clock)
         elif isinstance(other, RelativeDate):
             new_offset = self.offset - other.offset
@@ -55,8 +60,8 @@ class RelativeDate(ComparableMixin):
     __nonzero__ = __bool__
 
     def __repr__(self):
-        return "<{} offset={!r} now={!r}>".format(
+        return "<{} offset={!r} clock={!r}>".format(
             self.__class__.__name__,
             self.offset,
-            self._now
+            self._clock
         )
