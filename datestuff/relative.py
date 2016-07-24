@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, time
 from ._comparable import ComparableMixin
 
 try:
@@ -11,29 +11,43 @@ ZERO = timedelta(0)
 
 class RelativeDate(ComparableMixin):
     def __init__(self, offset=ZERO, clock=date.today):
-        self._offset = offset
+        self.offset = offset
         self._clock = clock
+
+    def replace(self, **kwargs):
+        offset = kwargs.pop('offset', self.offset)
+        when = self._now.replace(**kwargs)
+        return self._factory(when, offset)
+
+    def as_date(self):
+        return self._now
 
     @property
     def _now(self):
-        return self._clock() + self._offset
-
-    @property
-    def offset(self):
-        return self._offset
+        return self._clock() + self.offset
 
     @classmethod
     def fromordinal(cls, ordinal, offset=ZERO):
-        when = date.fromordinal(ordinal)
-        return RelativeDate(offset=offset, clock=lambda: when)
+        return cls.fromdate(date.fromordinal(ordinal), offset)
+
+    @classmethod
+    def fromtimestamp(cls, timestamp, offset=ZERO):
+        return cls.fromdate(date.fromtimestamp(timestamp), offset)
 
     @classmethod
     def today(cls, offset=ZERO):
         return RelativeDate(offset=offset)
 
+    @staticmethod
+    def fromdate(when, offset=ZERO):
+        return RelativeDate(offset=offset, clock=lambda: when)
+
+    _factory = fromdate
+
     def _compare(self, other, operator):
         if isinstance(other, RelativeDate):
-            return operator(self.offset, other.offset)
+            return operator(self.offset, other.offset) and \
+                   operator(self._now, other._now)
         return operator(self._now, other)
 
     def __add__(self, other):
@@ -76,3 +90,57 @@ class RelativeDate(ComparableMixin):
             self.offset,
             self._clock
         )
+
+
+class RelativeDateTime(RelativeDate):
+    def __init__(self, offset=ZERO, clock=datetime.now):
+        super(RelativeDateTime, self).__init__(offset, clock)
+
+    def astimezone(self, tzinfo):
+        return self.fromdatetime(self._now.astimezone(tzinfo), self.offset)
+
+    def as_datetime(self):
+        return self._now
+
+    def as_date(self):
+        return self.date()
+
+    @staticmethod
+    def now(tzinfo=None, offset=ZERO):
+        if tzinfo is None:
+            return RelativeDateTime(offset=offset)
+        return RelativeDateTime(offset=offset, clock=lambda: datetime.now(tzinfo))
+
+    @staticmethod
+    def utcnow(offset=ZERO):
+        return RelativeDateTime(offset=offset, clock=datetime.utcnow)
+
+    @classmethod
+    def today(cls, offset=ZERO):  # pragma: no cover
+        return cls.now(offset=offset)
+
+    @classmethod
+    def combine(cls, date, time, offset=ZERO):  # pragma: no cover
+        return cls.fromdatetime(datetime.combine(date, time), offset)
+
+    @classmethod
+    def fromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
+        return cls.fromdatetime(datetime.fromdatetime(timestamp), offset)
+
+    @classmethod
+    def utcfromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
+        return cls.fromdatetime(datetime.utcfromtimestamp(timestamp), offset)
+
+    @classmethod
+    def strptime(cls, timestamp, format, offset=ZERO):  # pragma: no cover
+        return cls.fromdatetime(datetime.strptime(timestamp, format), offset)
+
+    @classmethod
+    def fromdate(cls, when, offset=ZERO):
+        return cls.combine(when, time(), offset)
+
+    @staticmethod
+    def fromdatetime(when, offset=ZERO):
+        return RelativeDateTime(offset=offset, clock=lambda: when)
+
+    _factory = fromdatetime
