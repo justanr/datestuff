@@ -6,9 +6,11 @@ try:
 except ImportError:
     relativedelta = timedelta
 
+ZERO = timedelta(0)
+
 
 class RelativeDate(ComparableMixin):
-    def __init__(self, offset=timedelta(), clock=date.today):
+    def __init__(self, offset=ZERO, clock=date.today):
         self._offset = offset
         self._clock = clock
 
@@ -19,6 +21,15 @@ class RelativeDate(ComparableMixin):
     @property
     def offset(self):
         return self._offset
+
+    @classmethod
+    def fromordinal(cls, ordinal, offset=ZERO):
+        when = date.fromordinal(ordinal)
+        return RelativeDate(offset=offset, clock=lambda: when)
+
+    @classmethod
+    def today(cls, offset=ZERO):
+        return RelativeDate(offset=offset)
 
     def _compare(self, other, operator):
         if isinstance(other, RelativeDate):

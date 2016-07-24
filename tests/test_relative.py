@@ -90,6 +90,16 @@ class TestRelativeDate(object):
         assert subject.day == target.day
         assert subject.month == target.month
 
+    def test_fromordinal(self):
+        rd = RelativeDate.fromordinal(730920, offset=timedelta(days=5))
+
+        assert rd == date.fromordinal(730925)
+
+    def test_today(self):
+        rd = RelativeDate.today(offset=timedelta(days=5))
+
+        assert rd == date.today() + timedelta(days=5)
+
 
 class TestRelativeDeltaInterop(object):
     def test_relative_delta_with_relative_date(self):
