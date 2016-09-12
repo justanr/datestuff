@@ -1,9 +1,6 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
-import re
-import ast
-import os
 
 
 def read(filename):
@@ -54,7 +51,8 @@ if __name__ == "__main__":
             'License :: OSI Approved :: MIT License',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5'
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6'
         ],
         test_suite='test',
         tests_require=['tox'],
