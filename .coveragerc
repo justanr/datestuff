@@ -13,7 +13,6 @@ exclude_lines =
         pragma: no cover
         def __repr__
         if self\.debug
-        if 0
         if False
         if None
         raise Assertation
