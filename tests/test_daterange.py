@@ -68,6 +68,25 @@ def test_reports_contains_a_precise_datetime():
     assert datetime(2000, 4, 29, 7, 3) in dr
 
 
+def test_reports_contains_a_datetime_with_stop_and_neg_step():
+    dr = DateRange(
+        start=datetime(2016, 1, 23),
+        stop=datetime(2016, 1, 1),
+        step=timedelta(days=-1)
+    )
+
+    assert datetime(2016, 1, 20) in dr
+
+
+def test_reports_does_not_contain_greater_than_start_with_neg_step():
+    dr = DateRange(
+        start=datetime(2016, 1, 23),
+        step=timedelta(days=-1)
+    )
+
+    assert datetime(2016, 1, 31) not in dr
+
+
 @pytest.mark.parametrize('when', [
     datetime(2000, 1, 1, x) for x in range(1, 23)
 ])
@@ -96,9 +115,28 @@ def test_reverses_properly():
     assert list(reversed(dr)) == [datetime(2016, 1, 1, x) for x in range(23, 0, -1)]
 
 
+def test_cant_reverse_infinite_range():
+    with pytest.raises(ValueError):
+        reversed(DateRange(datetime.now(), step=timedelta(days=1)))
+
+
 def test_empty_if_start_is_higher_than_stop_without_negative_step():
     assert [] == list(DateRange(
         start=date(2016, 1, 31),
         stop=date(2016, 1, 1),
         step=timedelta(days=1)
     ))
+
+
+def test_equals_other_daterange():
+    dr = DateRange(datetime(2016, 1, 23), step=timedelta(1))
+    other_dr = DateRange(datetime(2016, 1, 23), step=timedelta(1))
+
+    assert dr == other_dr
+
+
+def test_not_equal_other_daterange():
+    dr = DateRange(datetime(2016, 1, 23), step=timedelta(days=10))
+    other_dr = DateRange(datetime(2016, 1, 23), step=timedelta(days=1))
+
+    assert dr != other_dr
