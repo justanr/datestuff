@@ -7,13 +7,16 @@ except ImportError:  # pragma: no cover
     relativedelta = timedelta
 
 ZERO = timedelta(0)
+TODAY_DATE = lambda: date.today()  # noqa
+NOW_DT = lambda: datetime.now()  # noqa
+UTCNOW_DT = lambda: datetime.utcnow()  # noqa
 
 
 class RelativeDate(ComparableMixin):
     """
     An unfixed date that is comparable to regular date and datetime objects.
     """
-    def __init__(self, offset=ZERO, clock=date.today):
+    def __init__(self, offset=ZERO, clock=TODAY_DATE):
         self.offset = offset
         self._clock = clock
 
@@ -112,7 +115,7 @@ class RelativeDateTime(RelativeDate):
     Unfixed datetime instance. Essentially the same as RelativeDate but with some changes
     to make it an appropriate replacement for a datetime object.
     """
-    def __init__(self, offset=ZERO, clock=datetime.now):
+    def __init__(self, offset=ZERO, clock=NOW_DT):
         super(RelativeDateTime, self).__init__(offset, clock)
 
     def astimezone(self, tzinfo):
@@ -132,7 +135,7 @@ class RelativeDateTime(RelativeDate):
 
     @staticmethod
     def utcnow(offset=ZERO):
-        return RelativeDateTime(offset=offset, clock=datetime.utcnow)
+        return RelativeDateTime(offset=offset, clock=UTCNOW_DT)
 
     @classmethod
     def today(cls, offset=ZERO):
