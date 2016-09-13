@@ -76,7 +76,20 @@ Adding and subtracting relative instances actually operate on their offsets, rat
 
         rd - rd == RelativeDate()
 
-Alternate constructors are provided for creating relative instances from static ones, though these are likely less useful than a truly unfixed instance. All Alternate constructors have a default offset of :code:`timedelta(0)` so they can transparently subsituted for the genuine article.
+Some alternate constructors are provided where it makes sense, each allows passing an offset but defaults to :code:`timedelta()`, provided are:
+
+* :code:`RelativeDate.today`: the default constructor
+* :code:`RelativeDateTime.now`: the default constructor, allows passing a tzinfo object to the factory
+* :code:`RelativeDateTime.utcnow`: factory produces UTC-based datetimes (note: these are NAIVE as it relies on the underlying :code:`datetime.utcnow`)
+* :code:`RelativeDateTime.today`: the default constructor, does not allow passing a tzinfo object
+
+For convenience sake there are also truly static constructors:
+
+* :code:`RelativeDate.fromdate`: hoists a regular date into relative context
+* :code:`RelativeDateTime.fromdatetime`: hoists a regular datetime into
+* :code:`RelativeDateTime.fromdate`: hoists a date into a :code:`RelativeDateTime` context, allows passing a tzinfo object, factory looks like :code:`datetime.combine(the_date, time(tzinfo=tzinfo))`
+
+Any additional static constructors, such as :code:`datetime.strptime`, can be derived from these if truly needed.
 
 .. code-block:: python
 
@@ -85,8 +98,6 @@ Alternate constructors are provided for creating relative instances from static 
         rd = RelativeDate.fromdate(date(2016, 7, 24), offset=timedelta(days=7))
         rd.as_date()  # date(2016, 7, 31), always
 
-        rdt = RelativeDateTime.combine(date(2016, 7, 24), time(12, 46), offset=timedelta(minutes=14))
-        rdt.as_datetime()  # datetime(2016, 7, 24, 13, 0)
 
 Finally, any functionality not implemented directly in the relative instance is proxied to the underlying :code:`date` or :code:`datetime` instance.
 
