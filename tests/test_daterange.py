@@ -117,7 +117,7 @@ def test_reverses_properly():
 
 def test_cant_reverse_infinite_range():
     with pytest.raises(ValueError):
-        reversed(DateRange(datetime.now(), step=timedelta(days=1)))
+        reversed(DateRange(datetime(2016, 1, 1), step=timedelta(days=1)))
 
 
 def test_empty_if_start_is_higher_than_stop_without_negative_step():
