@@ -34,7 +34,7 @@ class ToxTest(TestCommand):
 if __name__ == "__main__":
     setup(
         name='datestuff',
-        version='0.1.0',
+        version='0.2.0',
         author='Alec Nikolas Reiter',
         author_email='alecreiter@gmail.com',
         description='Stuff for dates',
