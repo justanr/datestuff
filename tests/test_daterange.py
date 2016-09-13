@@ -140,3 +140,131 @@ def test_not_equal_other_daterange():
     other_dr = DateRange(datetime(2016, 1, 23), step=timedelta(days=1))
 
     assert dr != other_dr
+
+
+@pytest.mark.parametrize('idx', ['a', 1.4])
+def test_raises_with_bad_subscription(idx):
+    dr = DateRange(datetime(2016, 1, 23), step=timedelta(days=1))
+
+    with pytest.raises(TypeError):
+        dr[idx]
+
+
+@pytest.mark.parametrize('idx,expected', [
+    (idx, datetime(2016, 1, 1 + idx * 2)) for idx in range(10)
+])
+def test_indexes_properly(idx, expected):
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        step=timedelta(days=2)
+    )
+
+    assert dr[idx] == expected
+
+
+def test_negative_index():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )
+
+    assert dr[-1] == datetime(2016, 1, 31)
+
+
+def test_negative_index_out_of_range():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )
+
+    with pytest.raises(IndexError):
+        dr[-32]
+
+
+def test_raises_if_out_of_range():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 1, 11),
+        step=timedelta(days=1)
+    )
+
+    with pytest.raises(IndexError):
+        dr[11]
+
+
+def test_raises_with_infinite_range_and_neg_step():
+    dr = DateRange(start=datetime(2016, 1, 1), step=timedelta(days=-1))
+
+    with pytest.raises(IndexError):
+        dr[-1]
+
+
+def test_empty_slice_is_a_copy():
+    dr = DateRange(start=datetime(2016, 1, 1), step=timedelta(days=1))
+    copy = dr[:]
+
+    assert dr == copy
+    assert dr is not copy
+
+
+@pytest.mark.parametrize('s', [
+    slice(-1, 1), slice(1, -1)
+])
+def test_fails_to_negative_slice_infinite_range(s):
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        step=timedelta(days=-1)
+    )
+
+    with pytest.raises(IndexError):
+        dr[s]
+
+
+def test_gets_slice():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )[1:]
+
+    expected = DateRange(
+        start=datetime(2016, 1, 2),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )
+
+    assert dr == expected
+
+
+def test_slice_without_start():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )[:10]
+
+    expected = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 1, 11),
+        step=timedelta(days=1)
+    )
+
+    assert dr == expected
+
+
+def test_full_slice():
+    dr = DateRange(
+        start=datetime(2016, 1, 1),
+        stop=datetime(2016, 2, 1),
+        step=timedelta(days=1)
+    )[1:-1:2]
+
+    expected = DateRange(
+        start=datetime(2016, 1, 2),
+        stop=datetime(2016, 1, 31),
+        step=timedelta(days=2)
+    )
+
+    assert dr == expected

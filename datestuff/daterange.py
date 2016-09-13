@@ -101,3 +101,65 @@ class DateRange(object):
         if isinstance(other, DateRange):
             return not self == other
         return NotImplemented
+
+    def __getitem__(self, idx_or_slice):
+        if isinstance(idx_or_slice, int):
+            return self._getidx(idx_or_slice)
+        elif isinstance(idx_or_slice, slice):
+            return self._getslice(idx_or_slice)
+
+        raise TypeError("DateRange indices must be integers or slices, not {}".format(idx_or_slice.__class__))  # noqa
+
+    def _getidx(self, idx):
+        if not self.stop and 0 > idx:
+            raise IndexError("Cannot negative index infinite range")
+
+        if self.stop and abs(idx) > len(self) - 1:
+            raise IndexError("DateRange index out of range")
+
+        if idx == 0:
+            return self.start
+        elif 0 > idx:
+            idx += len(self)
+
+        return self.start + (self.step * idx)
+
+    def _getslice(self, slice):
+        s = slice.start, slice.stop, slice.step
+
+        if s == (None, None, None) or s == (None, None, 1):
+            return DateRange(
+                start=self.start,
+                stop=self.stop,
+                step=self.step
+            )
+
+        start, stop, step = s
+
+        # seems redundant but we're converting None -> 0
+        start = start or 0
+        stop = stop or 0
+
+        # use 1 here because of multiplication
+        step = step or 1
+
+        if not self.stop and (0 > start or 0 > stop):
+            raise IndexError("Cannot negative index infinite range")
+
+        new_step = self.step * step
+
+        if not start:
+            new_start = self.start
+        else:
+            new_start = self[start]
+
+        if not stop:
+            new_stop = self.stop
+        else:
+            new_stop = self[stop]
+
+        return DateRange(
+            start=new_start,
+            stop=new_stop,
+            step=new_step
+        )
