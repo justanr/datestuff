@@ -39,7 +39,7 @@ class RelativeDate(ComparableMixin):
     @classmethod
     def today(cls, offset=ZERO):
         "Create a static RelativeDate from date.today"
-        return cls(offset=offset)
+        return cls(offset=offset, clock=TODAY_DATE)
 
     @staticmethod
     def fromdate(when, offset=ZERO):
@@ -48,7 +48,7 @@ class RelativeDate(ComparableMixin):
 
     def _compare(self, other, operator):
         if isinstance(other, RelativeDate):
-            return operator(self.offset, other.offset) and operator(self._now, other._now)
+            return operator(self._now, other._now)
         return operator(self._now, other)
 
     def __add__(self, other):

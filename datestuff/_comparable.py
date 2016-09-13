@@ -13,10 +13,6 @@ __all__ = ['ComparableMixin']
 
 
 # Don't do this at home kids
-def compare(self, other, operator):
-    return self._compare(other, operator)
-
-
 @abstractmethod
 def _compare(self, other, operator):
     pass
