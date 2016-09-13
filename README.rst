@@ -106,7 +106,7 @@ DateRange
 
 A range of dates is another tool I find myself needing from time to time, however eager creation can sometimes be very expensive for a large range.
 
-Instead, :code:`DateRange` is modeled after the Python 3 :code:`range` type, which has fast path lookup for membership and lazy iteration.
+Instead, :code:`DateRange` is modeled after the Python 3 :code:`range` type, which has fast path lookup for membership, lazy iteration, indexing and slicing (slices return new :code:`DateRange` objects)
 
 .. code-block:: python
 
@@ -121,7 +121,10 @@ Instead, :code:`DateRange` is modeled after the Python 3 :code:`range` type, whi
 
         list(dr)  # [date(2016, 1, 1), date(2016, 1, 8), ...]
 
-:code:`DateRange` also allows creating an open ended range by simply omitting the stop argument. In this case, the only functionality that will not work is using :code:`len` to determine the length.
+        dr[1] == date(2016, 1, 8)   # True
+        dr[1:-1:2] == DateRange(date(2016, 1, 8), date(2016, 12, 30), step=timedelta(days=14))  # True
+
+:code:`DateRange` also allows creating an open ended range by simply omitting the stop argument. In this case, the only functionality that will not work is using :code:`len` and negative indexing/slicing (as there is no end)
 
 Currently, :code:`DateRange` does not support :code:`relativedelta` as under the hood it uses :code:`timedelta.total_seconds` for Python 2 and 3 compatiblity. This could be resolved in the future, but is unlikely. :code:`DateRange` is, however, compatible with :code:`date` and :code:`datetime` like objects and other :code:`timedelta` like objects. Interestingly, this would apply to :code:`RelativeDate` and :code:`RelativeDateTime` as well.
 
