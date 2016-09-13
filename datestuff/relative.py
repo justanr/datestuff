@@ -23,7 +23,7 @@ class RelativeDate(ComparableMixin):
         """
         offset = kwargs.pop('offset', self.offset)
         when = self._now.replace(**kwargs)
-        return self._staticfactory(when, offset)
+        return self.fromdate(when, offset)
 
     def as_date(self):
         "Return the underlying date instance"
@@ -34,31 +34,18 @@ class RelativeDate(ComparableMixin):
         return self._clock() + self.offset
 
     @classmethod
-    def fromordinal(cls, ordinal, offset=ZERO):
-        "Create a static RelativeDate from an ordinal"
-        return cls._staticfactory(date.fromordinal(ordinal), offset)
-
-    @classmethod
-    def fromtimestamp(cls, timestamp, offset=ZERO):
-        "Create a static RelativeDate from a timestamp"
-        return cls._staticfactory(date.fromtimestamp(timestamp), offset)
-
-    @classmethod
     def today(cls, offset=ZERO):
         "Create a static RelativeDate from date.today"
-        return cls._staticfactory(date.today(), offset=offset)
+        return cls(offset=offset)
 
     @staticmethod
     def fromdate(when, offset=ZERO):
         "Create a static RelativeDate from an arbitrary date instance"
         return RelativeDate(offset=offset, clock=lambda: when)
 
-    _staticfactory = fromdate
-
     def _compare(self, other, operator):
         if isinstance(other, RelativeDate):
-            return operator(self.offset, other.offset) and \
-                   operator(self._now, other._now)
+            return operator(self.offset, other.offset) and operator(self._now, other._now)
         return operator(self._now, other)
 
     def __add__(self, other):
@@ -148,31 +135,14 @@ class RelativeDateTime(RelativeDate):
         return RelativeDateTime(offset=offset, clock=datetime.utcnow)
 
     @classmethod
-    def today(cls, offset=ZERO):  # pragma: no cover
+    def today(cls, offset=ZERO):
         return cls.now(offset=offset)
-
-    @classmethod
-    def combine(cls, date, time, offset=ZERO):  # pragma: no cover
-        return cls._staticfactory(datetime.combine(date, time), offset)
-
-    @classmethod
-    def fromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
-        return cls._staticfactory(datetime.fromdatetime(timestamp), offset)
-
-    @classmethod
-    def utcfromtimestamp(cls, timestamp, offset=ZERO):  # pragma: no cover
-        return cls._staticfactory(datetime.utcfromtimestamp(timestamp), offset)
-
-    @classmethod
-    def strptime(cls, timestamp, format, offset=ZERO):  # pragma: no cover
-        return cls._staticfactory(datetime.strptime(timestamp, format), offset)
-
-    @classmethod
-    def fromdate(cls, when, offset=ZERO):
-        return cls.combine(when, time(), offset)
 
     @staticmethod
     def fromdatetime(when, offset=ZERO):
         return RelativeDateTime(offset=offset, clock=lambda: when)
 
-    _staticfactory = fromdatetime
+    @staticmethod
+    def fromdate(when, tzinfo=None, offset=ZERO):
+        clock = lambda: datetime.combine(when, time(tzinfo=tzinfo))  # noqa
+        return RelativeDateTime(offset=offset, clock=clock)

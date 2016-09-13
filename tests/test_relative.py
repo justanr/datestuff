@@ -103,11 +103,6 @@ class TestRelativeDate(object):
         assert subject.day == target.day
         assert subject.month == target.month
 
-    def test_fromordinal(self):
-        rd = RelativeDate.fromordinal(730920, offset=timedelta(days=5))
-
-        assert rd == date.fromordinal(730925)
-
     def test_today(self):
         rd = RelativeDate.today(offset=timedelta(days=5))
 
@@ -128,11 +123,6 @@ class TestRelativeDate(object):
         rd = RelativeDate.today().replace(offset=timedelta(days=5))
 
         assert rd == RelativeDate.fromdate(date.today(), offset=timedelta(days=5))
-
-    def test_fromtimestamp(self):
-        rd = RelativeDate.fromtimestamp(1451624400.0, timedelta(days=5))
-
-        assert rd == RelativeDate.fromdate(date(2016, 1, 1), timedelta(days=5))
 
 
 class TestRelativeDateTime(object):
