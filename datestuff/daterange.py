@@ -37,7 +37,10 @@ class DateRange(object):
         )
 
     def __reversed__(self):
-        return DateRange(self.stop, self.start, -self.step)
+        if self.stop:
+            return DateRange(self.stop, self.start, -self.step)
+
+        raise ValueError("Cannot reverse infinite range")
 
     def __len__(self):
         if self.stop is None:
@@ -49,10 +52,7 @@ class DateRange(object):
         else:
             calc = self.stop - self.start
 
-        length = int(ceil(abs(calc.total_seconds()/self.step.total_seconds())))
-
-        self._length = length
-        return length
+        return int(ceil(abs(calc.total_seconds() / self.step.total_seconds())))
 
     def __contains__(self, x):
         if self.stop is not None:
@@ -87,3 +87,17 @@ class DateRange(object):
                 break
             yield current
             current = current + self.step
+
+    def __eq__(self, other):
+        if isinstance(other, DateRange):
+            return (
+                self.start == other.start and
+                self.stop == other.stop and
+                self.step == other.step
+            )
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, DateRange):
+            return not self == other
+        return NotImplemented
