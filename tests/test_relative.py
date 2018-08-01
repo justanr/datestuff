@@ -222,6 +222,18 @@ class TestRelativeDateTime(object):
         monkeypatch.setattr("datestuff.relative.datetime", FakeDateTime)
         assert RelativeDateTime.today() == NOW
 
+    def test_replace_with_date_arguments(self):
+        rd = RelativeDateTime.fromdate(date(2016, 1, 1)).replace(
+            year=2015, day=2, month=2
+        )
+
+        assert rd.as_date() == date(2015, 2, 2)
+
+    def test_replace_with_offset_argument(self):
+        rd = RelativeDateTime.fromdate(TODAY).replace(offset=timedelta(days=5))
+
+        assert rd == RelativeDateTime.fromdate(TODAY, offset=timedelta(days=5))
+
 
 class TestRelativeDeltaInterop(object):
     def test_relative_delta_with_relative_date(self):

@@ -1,4 +1,6 @@
-from datetime import date, datetime, timedelta, time
+from abc import abstractmethod
+from datetime import date, datetime, time, timedelta
+
 from ._comparable import ComparableMixin
 
 try:
@@ -6,32 +8,17 @@ try:
 except ImportError:  # pragma: no cover
     relativedelta = timedelta
 
+
 ZERO = timedelta(0)
 TODAY_DATE = lambda: date.today()  # noqa
 NOW_DT = lambda: datetime.now()  # noqa
 UTCNOW_DT = lambda: datetime.utcnow()  # noqa
 
 
-class RelativeDate(ComparableMixin):
-    """
-    An unfixed date that is comparable to regular date and datetime objects.
-    """
-
-    def __init__(self, offset=ZERO, clock=TODAY_DATE):
-        self.offset = offset
-        self._clock = clock
-
+class _RelativeBase(ComparableMixin):
+    @abstractmethod
     def replace(self, **kwargs):
-        """
-        Creates a static instance of RelativeDate, but allows to also change the offset.
-        """
-        offset = kwargs.pop("offset", self.offset)
-        when = self._now.replace(**kwargs)
-        return self.fromdate(when, offset)
-
-    def as_date(self):
-        "Return the underlying date instance"
-        return self._now
+        pass
 
     @property
     def _now(self):
@@ -109,14 +96,37 @@ class RelativeDate(ComparableMixin):
         )
 
 
-class RelativeDateTime(RelativeDate):
+class RelativeDate(_RelativeBase):
+    """
+    An unfixed date that is comparable to regular date and datetime objects.
+    """
+
+    def __init__(self, offset=ZERO, clock=TODAY_DATE):
+        self.offset = offset
+        self._clock = clock
+
+    def replace(self, **kwargs):
+        """
+        Creates a static instance of RelativeDate, but allows to also change the offset.
+        """
+        offset = kwargs.pop("offset", self.offset)
+        when = self._now.replace(**kwargs)
+        return self.fromdate(when, offset)
+
+    def as_date(self):
+        "Return the underlying date instance"
+        return self._now
+
+
+class RelativeDateTime(_RelativeBase):
     """
     Unfixed datetime instance. Essentially the same as RelativeDate but with some changes
     to make it an appropriate replacement for a datetime object.
     """
 
     def __init__(self, offset=ZERO, clock=NOW_DT):
-        super(RelativeDateTime, self).__init__(offset, clock)
+        self.offset = offset
+        self._clock = clock
 
     def astimezone(self, tzinfo):
         return self.fromdatetime(self._now.astimezone(tzinfo), self.offset)
@@ -126,6 +136,15 @@ class RelativeDateTime(RelativeDate):
 
     def as_date(self):
         return self.date()
+
+    def replace(self, **kwargs):
+        """
+        Creates a static instance of RelativeDateTime but also allows changing
+        the offset.
+        """
+        offset = kwargs.pop("offset", self.offset)
+        when = self._now.replace(**kwargs)
+        return self.fromdatetime(when, offset)
 
     @staticmethod
     def now(tzinfo=None, offset=ZERO):
