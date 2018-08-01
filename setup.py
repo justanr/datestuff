@@ -7,7 +7,7 @@ def read(filename):
 
 
 def long_descript():
-    return "\n\n".join([read(f) for f in ("README.rst", "CHANGELOG", "LICENSE")])
+    return "\n\n".join([read(f) for f in ("README.rst", "LICENSE")])
 
 
 if __name__ == "__main__":
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         author="Alec Nikolas Reiter",
         author_email="alecreiter@gmail.com",
         description="Stuff for dates",
-        long_description=read("README.rst"),
+        long_description=long_descript(),
         license="MIT",
         packages=find_packages("src", exclude=["test"]),
         package_dir={"": "src"},
