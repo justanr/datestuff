@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 import operator
 
 
-__all__ = ['ComparableMixin']
+__all__ = ["ComparableMixin"]
 
 
 # Don't do this at home kids
@@ -19,11 +19,11 @@ def _compare(self, other, operator):
 
 
 COMPARES = {
-    '__{}__'.format(c): lambda s, o, op=getattr(operator, c): s._compare(o, op)
-    for c in ['ge', 'gt', 'le', 'lt', 'eq', 'ne']
+    "__{}__".format(c): lambda s, o, op=getattr(operator, c): s._compare(o, op)
+    for c in ["ge", "gt", "le", "lt", "eq", "ne"]
 }
-COMPARES['_compare'] = _compare
+COMPARES["_compare"] = _compare
 
-ComparableMixin = ABCMeta('ComparableMixin', (object,), COMPARES)
+ComparableMixin = ABCMeta("ComparableMixin", (object,), COMPARES)
 
 del COMPARES

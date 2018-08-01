@@ -16,6 +16,7 @@ class RelativeDate(ComparableMixin):
     """
     An unfixed date that is comparable to regular date and datetime objects.
     """
+
     def __init__(self, offset=ZERO, clock=TODAY_DATE):
         self.offset = offset
         self._clock = clock
@@ -24,7 +25,7 @@ class RelativeDate(ComparableMixin):
         """
         Creates a static instance of RelativeDate, but allows to also change the offset.
         """
-        offset = kwargs.pop('offset', self.offset)
+        offset = kwargs.pop("offset", self.offset)
         when = self._now.replace(**kwargs)
         return self.fromdate(when, offset)
 
@@ -104,9 +105,7 @@ class RelativeDate(ComparableMixin):
 
     def __repr__(self):
         return "<{} offset={!r} clock={!r}>".format(
-            self.__class__.__name__,
-            self.offset,
-            self._clock
+            self.__class__.__name__, self.offset, self._clock
         )
 
 
@@ -115,6 +114,7 @@ class RelativeDateTime(RelativeDate):
     Unfixed datetime instance. Essentially the same as RelativeDate but with some changes
     to make it an appropriate replacement for a datetime object.
     """
+
     def __init__(self, offset=ZERO, clock=NOW_DT):
         super(RelativeDateTime, self).__init__(offset, clock)
 

@@ -1,14 +1,23 @@
 [run]
-omit = 
+omit =
         _*.py
 
-branch = True
+branch = true
+source = datestuff
+parallel = true
 
+[paths]
+source =
+    src/datestuff
+    .tox/*/lib/*/site-packages/datestuff/
 
 [report]
-skip_covered = True
+fail_under = 80
+precision = 2
+show_missing = true
+skip_covered = false
 
-exclude_lines = 
+exclude_lines =
         NOQA
         pragma: no cover
         def __repr__
@@ -20,3 +29,6 @@ exclude_lines =
         return NotImplemented
         abstractmethod
         if __name__ == .__main__.
+
+[html]
+directory = tests/htmlcov
