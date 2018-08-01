@@ -13,7 +13,7 @@ def long_descript():
 if __name__ == "__main__":
     setup(
         name="datestuff",
-        version="0.2.0",
+        version="0.3.0",
         author="Alec Nikolas Reiter",
         author_email="alecreiter@gmail.com",
         description="Stuff for dates",
