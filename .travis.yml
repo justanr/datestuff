@@ -1,0 +1,31 @@
+language: python
+matrix:
+  include:
+  - python: 2.7
+  - python: 3.4
+  - python: 3.5
+  - python: 3.6
+  - python: 3.7
+    dist: xenial
+    sudo: true
+install:
+- pip install -r requirements/requirements-travis.txt
+script:
+- tox
+after_success:
+- coverage combine tests
+- coveralls
+notifications:
+  webhooks: https://www.travisbuddy.com/
+  on_success: never
+deploy:
+  provider: pypi
+  user: justanr
+  password:
+    secure: q2KH5HmkaLrEZim4mjkEPiL6V1/cM0xjydEOmV6YTv6SaZicKEr5DrLzjlhTUhbOt/qf3Fqg5s3xGVgQUIjR7MiaMEWRqZENCZ5BGua31D444FM7qWDNPq/j33FPBmUBpPDfoWsf4SXSqwKFFVm/bxuVuF5oFJ/MJwXHCg1O+c6lLE6MRXcZPs2qdvaW5XuTeiud6OMe5CpzwOJ0ErDwldw9zBydTknOG5rn0KS5FfJAYP9INfhpf+SbArIiso0rdFmuuQS71xupjMclXSdiBC4kd2GRruYHW691floXFTd+sH90aGl+7rDsCq9+hc7Icf90ZTLEnAC3aJkcYHB0lKqKSl4ukkHd+2paCyrgV9Pncd46nilM7M/WAGW0fb8//iGKUbjIA6HJ+SmnQwUtUdBWk1FIukr1BykOSZznftuWz4XUOjsxj1jB+rZFcIMI0DF3bdMFMdGNtX3tKsY4r3fEhtP3A3lAdGefajECioXZKk/VmBOaYjSv2Lpgb5t8FJ7TP546NBSWB3vAwZ0eMA/lEP8KTkKrrqZdLY5bmAj/I3IgJGEcRHNpb+jgtf0NB9CZeRoavkMIcDna/7+1q13V53kUqr1PBWFq9wzwwlsIA4OXfxlXJfu3QD4OT0SyxdcpscpPA5d7pPBVRlRzp2KjXqd65iUSBD79cODgb1A=
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    branches: master
+    repo: justanr/datestuff
+    python: '3.7'

@@ -1,0 +1,6 @@
+-rrequirements-cov.txt
+flake8>=3.5.0
+pytest-flake8>=1.0.2
+pytest>=3.7.0
+pytest-random>=0.02
+python-dateutil>=2.7.3

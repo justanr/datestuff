@@ -2,7 +2,7 @@ from __future__ import division
 from math import ceil
 from datetime import timedelta
 
-__all__ = ('DateRange',)
+__all__ = ("DateRange",)
 
 
 class DateRange(object):
@@ -12,6 +12,7 @@ class DateRange(object):
     allows an open ended range. Also unlike range, it does not have an implicit step so it must be
     provided.
     """
+
     def __init__(self, start=None, stop=None, step=None):
         if step is None:
             raise TypeError("must provide step for DateRange.")
@@ -27,10 +28,7 @@ class DateRange(object):
 
     def __repr__(self):
         return "{!s}(start={!r}, stop={!r}, step={!r}".format(
-            self.__class__.__name__,
-            self.start,
-            self.stop,
-            self.step
+            self.__class__.__name__, self.start, self.stop, self.step
         )
 
     def __reversed__(self):
@@ -88,9 +86,9 @@ class DateRange(object):
     def __eq__(self, other):
         if isinstance(other, DateRange):
             return (
-                self.start == other.start and
-                self.stop == other.stop and
-                self.step == other.step
+                self.start == other.start
+                and self.stop == other.stop
+                and self.step == other.step
             )
         return NotImplemented
 
@@ -105,7 +103,11 @@ class DateRange(object):
         elif isinstance(idx_or_slice, slice):
             return self._getslice(idx_or_slice)
 
-        raise TypeError("DateRange indices must be integers or slices, not {}".format(idx_or_slice.__class__))  # noqa
+        raise TypeError(
+            "DateRange indices must be integers or slices, not {}".format(
+                idx_or_slice.__class__
+            )
+        )  # noqa
 
     def _getidx(self, idx):
         if not self.stop and 0 > idx:
@@ -125,11 +127,7 @@ class DateRange(object):
         s = slice.start, slice.stop, slice.step
 
         if s == (None, None, None) or s == (None, None, 1):
-            return DateRange(
-                start=self.start,
-                stop=self.stop,
-                step=self.step
-            )
+            return DateRange(start=self.start, stop=self.stop, step=self.step)
 
         start, stop, step = s
 
@@ -155,8 +153,4 @@ class DateRange(object):
         else:
             new_stop = self[stop]
 
-        return DateRange(
-            start=new_start,
-            stop=new_stop,
-            step=new_step
-        )
+        return DateRange(start=new_start, stop=new_stop, step=new_step)
